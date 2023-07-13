@@ -54,3 +54,18 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
     """
     if instance.image:
         instance.image.delete(save=False)
+
+
+class Review(models.Model):
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, null=True, related_name="reviews")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    comment = models.TextField(max_length=1000, default="", blank=False)
+    rating = models.IntegerField(default=0)
+    createdAt = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.comment)
+
+    class Meta:
+        ordering = ['rating']

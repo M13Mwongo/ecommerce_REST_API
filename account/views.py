@@ -84,7 +84,7 @@ def update_user(request):
     user.email = request.data.get('email', user.email)
     user.username = request.data.get('username', user.username)
 
-    if 'password' in data and data['password'] != "":
+    if data['password'] != "":
         user.password = make_password(data['password'])
 
     user.save()
