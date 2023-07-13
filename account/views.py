@@ -1,6 +1,12 @@
-from django.shortcuts import render
+from datetime import datetime, timedelta
+from os import link
+
+from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
+from django.utils.crypto import get_random_string
+from django.utils.timezone import now
+from django.core.mail import send_mail
 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -92,3 +98,68 @@ def update_user(request):
     serializer = UserSerializer(user, many=False)
 
     return Response(serializer.data)
+
+
+def get_current_host(request):
+    protocol = request.is_secure() and "https://" or "http://"
+    host = request.get_host()
+
+    return "{protocol}{host}".format(protocol=protocol, host=host)
+
+
+@api_view(['POST'])
+def forgot_password(request):
+    data = request.data
+
+    user = get_object_or_404(User, email=data['email'])
+
+    # Generates random string token and expiry date
+    token = get_random_string(length=40)
+    expire_date = now() + timedelta(minutes=30)
+
+    # Saves the token and expiry date to the profile model
+    user.profile.reset_password_token = token
+    user.profile.reset_password_expire = expire_date
+    user.profile.save()
+
+    current_host = get_current_host(request)
+
+    link = "{current_host}/api/reset-password/{token}".format(
+        current_host=current_host,
+        token=token
+    )
+    email_body = f"Your password reset link is: {link}".format(link=link)
+
+    send_mail(
+        subject="Password reset",
+        message=email_body,
+        from_email="noreply@eshop.com",
+        recipient_list=[data['email']]
+    )
+
+    return Response({"details": "Password reset link sent to {email}".format(email=data['email'])}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def reset_password(request, token):
+    data = request.data
+
+    user = get_object_or_404(User, profile__reset_password_token=token)
+
+    # tzinfo is used to avoid timezone issues
+    reset_password_expire = user.profile.reset_password_expire
+
+    if reset_password_expire < now():
+        return Response({"error": "Reset password link has expired"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if data['password'] != data['confirmPassword']:
+        return Response({"error": "Passwords do not match"}, status=status.HTTP_400_BAD_REQUEST)
+
+    user.password = make_password(data['password'])
+    user.profile.reset_password_token = ""
+    user.profile.reset_password_expire = None
+
+    user.profile.save()
+    user.save()
+
+    return Response({"details": "Password reset successfully"}, status=status.HTTP_200_OK)
