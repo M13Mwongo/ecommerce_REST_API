@@ -2,6 +2,8 @@ from pathlib import Path
 import dotenv
 import os
 
+from datetime import timedelta
+
 dotenv.read_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,6 +27,19 @@ ALLOWED_HOSTS = []
 # Rest framework settings
 REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'utils.custom_exception_handler.custom_exception_handler',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+# Simple JWT options
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ("Bearer",),
+    'AUTH_TOKEN_CLASSES': ("rest_framework_simplejwt.tokens.AccessToken",),
+    # "UPDATE_LAST_LOGIN": True,
 }
 
 # Amazon s3 config using django-storages
@@ -56,11 +71,13 @@ INSTALLED_APPS = [
 
     # Third party apps
     'rest_framework',
+    'rest_framework_simplejwt',
     'django_filters',
     'storages',
 
     # Local apps
     'product.apps.ProductConfig',
+    'account.apps.AccountConfig',
 ]
 
 MIDDLEWARE = [

@@ -1,8 +1,10 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
+
 from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 
 from .serializers import ProductSerializer, ProductImagesSerializer
 
@@ -69,6 +71,7 @@ def get_product(request, pk):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def new_product(request):
     """
     Create a product.
@@ -85,7 +88,7 @@ def new_product(request):
 
     # Checks whether the serializer is valid as per the requirements
     if serializer.is_valid():
-        product = Product.objects.create(**data)
+        product = Product.objects.create(**data, user=request.user)
         res = ProductSerializer(product, many=False)
         return Response({"product": res.data})
     else:
@@ -119,6 +122,7 @@ def upload_product_images(request):
 
 
 @api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
 def update_product(request, pk):
     """
     Update a product with the given ID.
@@ -132,7 +136,8 @@ def update_product(request, pk):
     """
     product = get_object_or_404(Product, id=pk)
 
-    # Check if the user who is editing the product == the one who created it - TODO
+    if product.user is not request.user:
+        return Response({"error": "You are not authorized to update this product."}, status=status.HTTP_403_FORBIDDEN)
 
     # Update product fields
     product.name = request.data.get('name', product.name)
@@ -151,10 +156,23 @@ def update_product(request, pk):
 
 
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def delete_product(request, pk):
+    """
+    Delete a product.
+
+    Parameters:
+        request (HttpRequest): The request object.
+        pk (int): The primary key of the product to be deleted.
+
+    Returns:
+        Response: The response message indicating the status of the deletion.
+    """
     product = get_object_or_404(Product, id=pk)
 
-    # Check if the user who is editing the product == the one who created it
+    if product.user is not request.user:
+        return Response({"error": "You are not authorized to update this product."}, status=status.HTTP_403_FORBIDDEN)
+
     args = {'product': pk}
     images = ProductImages.objects.filter(**args)
 
