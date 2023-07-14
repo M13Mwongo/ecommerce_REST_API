@@ -4,7 +4,7 @@ from django.db.models import Avg
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 
 from .serializers import ProductSerializer, ProductImagesSerializer
@@ -72,7 +72,7 @@ def get_product(request, pk):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def new_product(request):
     """
     Create a product.
@@ -97,6 +97,7 @@ def new_product(request):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def upload_product_images(request):
     """
     Uploads product images to the server.
@@ -123,7 +124,7 @@ def upload_product_images(request):
 
 
 @api_view(['PATCH'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def update_product(request, pk):
     """
     Update a product with the given ID.
@@ -157,7 +158,7 @@ def update_product(request, pk):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def delete_product(request, pk):
     """
     Delete a product.
