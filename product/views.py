@@ -138,8 +138,8 @@ def update_product(request, pk):
     """
     product = get_object_or_404(Product, id=pk)
 
-    if product.user is not request.user:
-        return Response({"error": "You are not authorized to update this product."}, status=status.HTTP_403_FORBIDDEN)
+    # if product.user is not request.user:
+    #     return Response({"error": "You are not authorized to update this product."}, status=status.HTTP_403_FORBIDDEN)
 
     # Update product fields
     product.name = request.data.get('name', product.name)
