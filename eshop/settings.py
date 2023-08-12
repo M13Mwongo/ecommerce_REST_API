@@ -16,13 +16,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
+# Declaring Heroku app
+IS_HEROKU_APP = "DYNO" in os.environ and not "CI" in os.environ
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG") == "True"
 # DEBUG = False
 
-ALLOWED_HOSTS = []
 # Used in production for allowed ports
-# ALLOWED_HOSTS = ['127.0.0.1']
+if IS_HEROKU_APP:
+    ALLOWED_HOSTS = ["*"]
+else:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1',
+                     'eshop-env.eba-pfwv7p2r.us-west-2.elasticbeanstalk.com']
+
 
 # Rest framework settings
 REST_FRAMEWORK = {
@@ -42,6 +49,10 @@ SIMPLE_JWT = {
     # "UPDATE_LAST_LOGIN": True,
 }
 
+# Don't store the original (un-hashed filename) version of static files, to reduce slug size:
+# https://whitenoise.readthedocs.io/en/latest/django.html#WHITENOISE_KEEP_ONLY_HASHED_FILES
+WHITENOISE_KEEP_ONLY_HASHED_FILES = True
+
 # Amazon s3 config using django-storages
 STORAGES = {
     "default": {
@@ -55,6 +66,7 @@ STORAGES = {
     # }
 
 }
+
 AWS_S3_ACCESS_KEY_ID = os.environ.get('AWS_S3_ACCESS_KEY_ID')
 AWS_S3_SECRET_ACCESS_KEY = os.environ.get('AWS_S3_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
