@@ -28,7 +28,7 @@ if IS_HEROKU_APP:
     ALLOWED_HOSTS = ["*"]
 else:
     ALLOWED_HOSTS = ['localhost', '127.0.0.1',
-                     'eshop-env.eba-2ddtafk9.us-west-2.elasticbeanstalk.com']
+                     'eshop-API-env.eba-f3r329z2.us-west-2.elasticbeanstalk.com']
 
 
 # Rest framework settings
