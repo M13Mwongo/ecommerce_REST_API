@@ -28,12 +28,12 @@ if IS_HEROKU_APP:
     ALLOWED_HOSTS = ["*"]
 else:
     ALLOWED_HOSTS = ['localhost', '127.0.0.1',
-                     'eshop-env.eba-pfwv7p2r.us-west-2.elasticbeanstalk.com']
+                     'eshop-env.eba-2ddtafk9.us-west-2.elasticbeanstalk.com']
 
 
 # Rest framework settings
 REST_FRAMEWORK = {
-    'EXCEPTION_HANDLER': 'utils.custom_exception_handler.custom_exception_handler',
+    'EXCEPTION_HANDLER': 'uetils.custom_exception_handler.custom_exception_handler',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
